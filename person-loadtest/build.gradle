@@ -1,0 +1,31 @@
+group 'com.example'
+version '1.0.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'scala'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.8'
+    compile group: 'io.gatling', name: 'gatling-app', version: '2.2.0'
+    compile group: 'io.gatling', name: 'gatling-recorder', version: '2.2.0'
+    compile group: 'io.gatling.highcharts', name: 'gatling-charts-highcharts', version: '2.2.0'
+}
+
+task gatling(dependsOn: 'compileTestScala') << {
+    javaexec {
+        main = 'io.gatling.app.Gatling'
+        classpath = sourceSets.test.output + sourceSets.test.runtimeClasspath
+        jvmArgs = ["-Dtarget.url=${targetUrl}", "-Dusers=${numUsers}", "-DrampUp=${rampUp}"]
+        args = ['-sf', sourceSets.test.output,
+                '-bf', sourceSets.test.output.classesDir,
+                '-s', 'SmartSiteSimulation',
+                '-rf', 'build/reports/gatling']
+    }
+}
