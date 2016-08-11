@@ -5,6 +5,7 @@ import io.gatling.http.Predef._
 import org.slf4j.LoggerFactory
 import _root_.scenario.{CreatePersonScenario, ListOfPersonsScenario}
 
+import scala.concurrent.duration._
 /**
   * Load test simulation for SmartSite.
   */
@@ -28,8 +29,11 @@ class PersonAppSimulation extends Simulation {
     .contentTypeHeader("application/json")
     .userAgentHeader("Apache-HttpClient/4.4.1 (Java/1.8.0_76-release)")
 
-  setUp(CreatePersonScenario.scn.inject(rampUsers(numberOfUsers) over (rampUp seconds)),
-    ListOfPersonsScenario.scn.inject(rampUsers(numberOfUsers) over (rampUp seconds))).protocols(httpProtocol)
+  setUp(
+      CreatePersonScenario.scn.inject(constantUsersPerSec(8) during (15 seconds)),
+      ListOfPersonsScenario.scn.inject(constantUsersPerSec(8) during (15 seconds))
+      )
+      .protocols(httpProtocol)
       .assertions(
         global.successfulRequests.percent.greaterThan(98),
         details("list_of_persons").responseTime.max.lessThan(2000),
